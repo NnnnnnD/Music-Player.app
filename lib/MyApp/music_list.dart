@@ -5,7 +5,7 @@ import 'music_player.dart';
 
 class MusicListPage extends StatelessWidget {
   final List<Music> musicList = [
-    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/song1.mp3'),
+    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Song1.mp3'),
     /*Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg'),
     Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg'),
     Music('Love Of My Life', 'Queen', 'assets/images/Cover4.jpeg'),

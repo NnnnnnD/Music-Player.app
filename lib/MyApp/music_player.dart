@@ -228,7 +228,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
 class MusicListPage extends StatelessWidget {
   final List<Music> musicList = [
-    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/song1.mp3'),
+    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Song1.mp3'),
     //Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg', 'assets/audio/song2.mp3'),
     //Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg', 'assets/audio/song3.mp3'),
     // ....
