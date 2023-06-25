@@ -74,7 +74,16 @@ flutter:
     - assets/images/Cover9.jpeg
     - assets/images/Cover10.jpeg
     - assets/audio/
-    - assets/audio/Song1.mp3
+    - assets/audio/Bohemian Rhapsody.mp3
+    - assets/audio/Don't Stop Me Now.mp3
+    - assets/audio/Good Old Fashioned Lover Boy.mp3
+    - assets/audio/I want to Break Free.mp3
+    - assets/audio/Killer Queen.mp3
+    - assets/audio/Love of My Life.mp3
+    - assets/audio/Radio Ga Ga.mp3
+    - assets/audio/Somebody To Love.mp3
+    - assets/audio/Under Pressure.mp3
+    - assets/audio/We Will Rock You.mp3
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
