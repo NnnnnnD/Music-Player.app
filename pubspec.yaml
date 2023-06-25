@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   audioplayers: ^0.20.1
+  
   flutter_xlider: ^3.0.0
 
   # The following adds the Cupertino Icons font to your application.
@@ -62,32 +63,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/images/Background.jpeg
-    - assets/images/Background2.jpeg
-    - assets/images/Background3.jpeg
-    - assets/images/BackgroundIMG.jpeg
-    - assets/images/Cover1.jpeg
-    - assets/images/Cover2.jpeg
-    - assets/images/Cover3.jpeg
-    - assets/images/Cover4.jpeg
-    - assets/images/Cover5.jpeg
-    - assets/images/Cover6.jpeg
-    - assets/images/Cover7.jpeg
-    - assets/images/Cover8.jpeg
-    - assets/images/Cover9.jpeg
-    - assets/images/Cover10.jpeg
-    - assets/audio/
-    - assets/audio/Bohemian Rhapsody.mp3
-    - assets/audio/Don't Stop Me Now.mp3
-    - assets/audio/Good Old Fashioned Lover Boy.mp3
-    - assets/audio/I want to Break Free.mp3
-    - assets/audio/Killer Queen.mp3
-    - assets/audio/Love of My Life.mp3
-    - assets/audio/Radio Ga Ga.mp3
-    - assets/audio/Somebody To Love.mp3
-    - assets/audio/Under Pressure.mp3
-    - assets/audio/We Will Rock You.mp3
-
+    - assets/audio/Queen1.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

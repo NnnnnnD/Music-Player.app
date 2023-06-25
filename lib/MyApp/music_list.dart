@@ -4,7 +4,7 @@ import 'music_player.dart';
 
 class MusicListPage extends StatelessWidget {
   final List<Music> musicList = [
-    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Bohemian Rhapsody.mp3'),
+    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Queen1.mp3'),
     Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg','assets/audio/Don\'t Stop Me Now.mp3'),
     Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg','assets/audio/Good Old Fashioned Lover Boy'),
     Music('Love Of My Life', 'Queen', 'assets/images/Cover4.jpeg','assets/audio/I Want to Break Free'),
@@ -14,7 +14,6 @@ class MusicListPage extends StatelessWidget {
     Music('Under Pressure', 'Queen', 'assets/images/Cover8.jpeg','assets/audio/Somebody To Love'),
     Music('We Will Rock You', 'Queen', 'assets/images/Cover9.jpeg','assets/audio/Under Pressure'),
     Music("Don't Stop Me Now", 'Queen', 'assets/images/Cover10.jpeg','assets/audio/We Will Rock You'),
-    
   ];
 
   @override
@@ -22,7 +21,7 @@ class MusicListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text('Music Player'),
+        title: Text('OH Music Player'),
         actions: [
   IconButton(
     icon: Icon(Icons.info),
@@ -41,7 +40,7 @@ class MusicListPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Project Made by:',
+                    'Music Player Made by :',
                     style: TextStyle(
                       fontSize: 18.0,
                       fontWeight: FontWeight.bold,
