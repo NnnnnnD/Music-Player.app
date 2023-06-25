@@ -63,6 +63,9 @@ flutter:
   assets:
     - assets/images/
     - assets/images/Background.jpeg
+    - assets/images/Background2.jpeg
+    - assets/images/Background3.jpeg
+    - assets/images/BackgroundIMG.jpeg
     - assets/images/Cover1.jpeg
     - assets/images/Cover2.jpeg
     - assets/images/Cover3.jpeg

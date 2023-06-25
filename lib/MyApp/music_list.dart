@@ -1,6 +1,5 @@
-   import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
-
 import 'music_player.dart';
 
 class MusicListPage extends StatelessWidget {
@@ -24,11 +23,72 @@ class MusicListPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: Text('Music Player'),
+        actions: [
+  IconButton(
+    icon: Icon(Icons.info),
+    onPressed: () {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Project Made by:',
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 16.0),
+                  Text('Team 1'),
+                  SizedBox(height: 8.0),
+                  Text('1. Nandy'),
+                  Text('2. Tiara'),
+                  Text('3. Adit S'),
+                  Text('4. Adit F'),
+                  Text('5. Dadan'),
+                  Text('6. Syeila'),
+                  SizedBox(height: 16.0),
+                  Align(
+                    alignment: Alignment.center,
+                    child: TextButton(
+                      child: Text(
+                        'OK',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  ),
+],
+
+
       ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Background.jpeg'),
+            image: AssetImage('assets/images/BackgroundIMG.jpeg'),
             fit: BoxFit.cover,
           ),
         ),
