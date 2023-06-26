@@ -6,7 +6,7 @@ class Music {
   final String artist;
   final String imagePath;
   final String audioPath;
-  
+
   Music(this.title, this.artist, this.imagePath, this.audioPath);
 }
 
@@ -22,11 +22,31 @@ class MusicPlayerPage extends StatefulWidget {
 class _MusicPlayerPageState extends State<MusicPlayerPage> {
   late AudioPlayer audioPlayer;
   bool isPlaying = false;
+  Duration _duration = Duration();
+  Duration _position = Duration();
+  double _sliderValue = 0.0;
+  bool _isSliderDragging = false;
 
   @override
   void initState() {
     super.initState();
     audioPlayer = AudioPlayer();
+    audioPlayer.onDurationChanged.listen((duration) {
+      setState(() {
+        _duration = duration;
+      });
+    });
+    audioPlayer.onAudioPositionChanged.listen((position) {
+      if (!_isSliderDragging) {
+        setState(() {
+          _position = position;
+          if (_duration.inMilliseconds > 0) {
+            _sliderValue = _position.inMilliseconds.toDouble() /
+                _duration.inMilliseconds.toDouble();
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -40,6 +60,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
     await audioPlayer.play(audioPath, isLocal: true);
     setState(() {
       isPlaying = true;
+      _sliderValue = _clampSliderValue(_sliderValue);
     });
   }
 
@@ -54,7 +75,26 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
     await audioPlayer.stop();
     setState(() {
       isPlaying = false;
+      _position = Duration();
+      _sliderValue = 0.0;
     });
+  }
+
+  void seekToPosition(double value) {
+    final double position = _clampSliderValue(value);
+    audioPlayer.seek(Duration(milliseconds: position.toInt()));
+  }
+
+  double _clampSliderValue(double value) {
+    final double min = 0.0;
+    final double max = _duration.inMilliseconds.toDouble();
+    return value.clamp(min, max);
+  }
+
+  String formatDuration(Duration duration) {
+    String minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    String seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   @override
@@ -149,27 +189,36 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '0:00',
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
+                        formatDuration(_position),
+                        style: TextStyle(color: Colors.white),
                       ),
                       Text(
-                        '3:45',
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
+                        formatDuration(_duration),
+                        style: TextStyle(color: Colors.white),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: 10),
-                Slider(
-                  value: 0.5,
-                  onChanged: (value) {
-                    // Handle slider changes
-                  },
-                  activeColor: Colors.green,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Slider(
+                    min: 0,
+                    max: _duration.inMilliseconds.toDouble(),
+                    value: _sliderValue,
+                    onChanged: (value) {
+                      setState(() {
+                        _sliderValue = value;
+                        _isSliderDragging = true;
+                      });
+                    },
+                    onChangeEnd: (value) {
+                      setState(() {
+                        _isSliderDragging = false;
+                        seekToPosition(value);
+                      });
+                    },
+                  ),
                 ),
                 SizedBox(height: 10),
                 Padding(
@@ -228,16 +277,26 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
 class MusicListPage extends StatelessWidget {
   final List<Music> musicList = [
-    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Queen1.mp3'),
-    Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg','assets/audio/I Want to Break Free.mp3'),
-    Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg','assets/audio/Somebody To Love.mp3'),
-    Music('Love Of My Life', 'Queen', 'assets/images/Cover4.jpeg','assets/audio/Love of My Life.mp3'),
-    Music('Killer Queen', 'Queen', 'assets/images/Cover5.jpeg','assets/audio/Killer Queen.mp3'),
-    Music('Good Old-Fashioned Lover Boy', 'Queen', 'assets/images/Cover6.jpeg','assets/audio/Good Old Fashioned Lover Boy.mp3'),
-    Music('Radio Ga-Ga', 'Queen', 'assets/images/Cover7.jpeg','assets/audio/Radio Ga Ga.mp3'),
-    Music('Under Pressure', 'Queen', 'assets/images/Cover8.jpeg','assets/audio/Under Pressure.mp3'),
-    Music('We Will Rock You', 'Queen', 'assets/images/Cover9.jpeg','assets/audio/We Will Rock You.mp3'),
-    Music("Don't Stop Me Now", 'Queen', 'assets/images/Cover10.jpeg','assets/audio/Don\'t Stop Me Now.mp3'),
+    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg',
+        'assets/audio/Queen1.mp3'),
+    Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg',
+        'assets/audio/I Want to Break Free.mp3'),
+    Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg',
+        'assets/audio/Somebody To Love.mp3'),
+    Music('Love Of My Life', 'Queen', 'assets/images/Cover4.jpeg',
+        'assets/audio/Love of My Life.mp3'),
+    Music('Killer Queen', 'Queen', 'assets/images/Cover5.jpeg',
+        'assets/audio/Killer Queen.mp3'),
+    Music('Good Old-Fashioned Lover Boy', 'Queen',
+        'assets/images/Cover6.jpeg', 'assets/audio/Good Old Fashioned Lover Boy.mp3'),
+    Music('Radio Ga-Ga', 'Queen', 'assets/images/Cover7.jpeg',
+        'assets/audio/Radio Ga Ga.mp3'),
+    Music('Under Pressure', 'Queen', 'assets/images/Cover8.jpeg',
+        'assets/audio/Under Pressure.mp3'),
+    Music('We Will Rock You', 'Queen', 'assets/images/Cover9.jpeg',
+        'assets/audio/We Will Rock You.mp3'),
+    Music("Don't Stop Me Now", 'Queen', 'assets/images/Cover10.jpeg',
+        "assets/audio/Don't Stop Me Now.mp3"),
   ];
 
   @override
