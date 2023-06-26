@@ -129,6 +129,8 @@ class MusicListPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => MusicPlayerPage(
                         music: musicList[index],
+                         musicList: musicList,
+                        currentIndex: index,
                       ),
                     ),
                   );
