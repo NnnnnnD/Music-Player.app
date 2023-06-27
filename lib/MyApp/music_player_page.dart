@@ -6,14 +6,19 @@ class Music {
   final String artist;
   final String imagePath;
   final String audioPath;
+  final Duration duration;
 
-  Music(this.title, this.artist, this.imagePath, this.audioPath);
+  Music(this.title, this.artist, this.imagePath, this.audioPath, this.duration);
 }
 
 class MusicPlayerPage extends StatefulWidget {
   final Music music;
+  final List<Music> musicList;
+  final int currentIndex;
 
-  MusicPlayerPage({required this.music});
+  MusicPlayerPage(
+      {required this.music, required this.musicList, required this.currentIndex}
+      );
 
   @override
   _MusicPlayerPageState createState() => _MusicPlayerPageState();
@@ -22,11 +27,26 @@ class MusicPlayerPage extends StatefulWidget {
 class _MusicPlayerPageState extends State<MusicPlayerPage> {
   late AudioPlayer audioPlayer;
   bool isPlaying = false;
+  Duration currentPosition = Duration();
+  int currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
+    currentIndex = widget.currentIndex;
     audioPlayer = AudioPlayer();
+
+    audioPlayer.onAudioPositionChanged.listen((Duration position) {
+      setState(() {
+        currentPosition = position;
+      });
+      checkEndOfSong();
+    });
+
+    audioPlayer.onPlayerCompletion.listen((event) {
+      playNextSong();
+    });
+    playMusic(widget.music.audioPath);
   }
 
   @override
@@ -36,11 +56,22 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
   }
 
   Future<void> playMusic(String audioPath) async {
-    await audioPlayer.stop();
-    await audioPlayer.play(audioPath, isLocal: true);
-    setState(() {
-      isPlaying = true;
-    });
+    if (isPlaying) {
+      await audioPlayer.resume();
+    }else {
+      await audioPlayer.play(audioPath, isLocal: true);
+      audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+        if (state == PlayerState.PAUSED || state == PlayerState.STOPPED) {
+          setState(() {
+            isPlaying = false;
+          });
+        }else if (state == PlayerState.PLAYING) {
+          setState(() {
+            isPlaying = true;
+          });
+        }
+      });
+    }
   }
 
   Future<void> pauseMusic() async {
@@ -51,14 +82,61 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
   }
 
   Future<void> stopMusic() async {
-    await audioPlayer.stop();
-    setState(() {
-      isPlaying = false;
-    });
+    int result = await audioPlayer.stop();
+    if (result == 1) {
+      setState(() {
+        isPlaying = false;
+        currentPosition = Duration();
+      });
+    }
+  }
+
+  void seekMusic(Duration position) {
+    audioPlayer.seek(position);
+  }
+
+  void playNextSong() {
+    int nextIndex = currentIndex + 1;
+    if (nextIndex < widget.musicList.length) {
+      setState(() {
+        currentIndex = nextIndex;
+        currentPosition = Duration();
+      });
+      stopMusic().then((_) {
+        playMusic(widget.musicList[currentIndex].audioPath);
+      });
+    }
+  }
+
+  void playPreviousSong() {
+    int previousIndex = currentIndex - 1;
+    if (previousIndex >= 0) {
+      setState(() {
+        currentIndex = previousIndex;
+        currentPosition = Duration();
+      });
+      stopMusic().then((_) {
+        playMusic(widget.musicList[currentIndex].audioPath);
+      });
+    }
+  }
+
+  void checkEndOfSong() {
+    if (currentPosition >= widget.musicList[currentIndex].duration) {
+      playNextSong();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    String formatDuration(Duration duration) {
+      String minutes =
+          duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+      String seconds =
+          duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+      return '$minutes:$seconds';
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -81,7 +159,6 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
               color: Colors.white,
             ),
             onPressed: () {
-              // Handle more options
             },
           ),
         ],
@@ -101,7 +178,8 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       image: DecorationImage(
-                        image: AssetImage(widget.music.imagePath),
+                        image: AssetImage(
+                            widget.musicList[currentIndex].imagePath),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -110,7 +188,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 SizedBox(height: 20),
                 Center(
                   child: Text(
-                    widget.music.title,
+                    widget.musicList[currentIndex].title,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -121,7 +199,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 SizedBox(height: 10),
                 Center(
                   child: Text(
-                    widget.music.artist,
+                    widget.musicList[currentIndex].artist,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -149,13 +227,14 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '0:00',
+                        formatDuration(currentPosition),
                         style: TextStyle(
                           color: Colors.grey,
                         ),
                       ),
                       Text(
-                        '3:45',
+                        formatDuration(
+                            widget.musicList[currentIndex].duration),
                         style: TextStyle(
                           color: Colors.grey,
                         ),
@@ -165,9 +244,18 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 ),
                 SizedBox(height: 10),
                 Slider(
-                  value: 0.5,
+                  value: currentPosition.inSeconds.toDouble(),
+                  min: 0.0,
+                  max: widget.musicList[currentIndex].duration.inSeconds
+                      .toDouble(),
                   onChanged: (value) {
-                    // Handle slider changes
+                    setState(() {
+                      currentPosition = Duration(seconds: value.toInt());
+                    });
+                    audioPlayer.seek(currentPosition);
+                  },
+                  onChangeEnd: (value) {
+                    seekMusic(currentPosition);
                   },
                   activeColor: Colors.green,
                 ),
@@ -175,17 +263,17 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.shuffle,
-                        color: Colors.white,
+                      IconButton(
+                        icon: Icon(
+                          Icons.skip_previous,
+                          size: 36,
+                          color: Colors.white,
+                        ),
+                        onPressed: playPreviousSong,
                       ),
-                      Icon(
-                        Icons.skip_previous,
-                        size: 36,
-                        color: Colors.white,
-                      ),
+                      SizedBox(width: 20),
                       CircleAvatar(
                         radius: 70,
                         backgroundColor: Colors.black,
@@ -199,19 +287,20 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                             if (isPlaying) {
                               pauseMusic();
                             } else {
-                              playMusic(widget.music.audioPath);
+                              playMusic(
+                                  widget.musicList[currentIndex].audioPath);
                             }
                           },
                         ),
                       ),
-                      Icon(
-                        Icons.skip_next,
-                        size: 36,
-                        color: Colors.white,
-                      ),
-                      Icon(
-                        Icons.repeat,
-                        color: Colors.white,
+                      SizedBox(width: 20),
+                      IconButton(
+                        icon: Icon(
+                          Icons.skip_next,
+                          size: 36,
+                          color: Colors.white,
+                        ),
+                        onPressed: playNextSong,
                       ),
                     ],
                   ),
@@ -228,16 +317,76 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
 class MusicListPage extends StatelessWidget {
   final List<Music> musicList = [
-    Music('Bohemian Rhapsody', 'Queen', 'assets/images/Cover1.jpeg', 'assets/audio/Bohemian Rhapsody.mp3'),
-    Music('I Want To Break Free', 'Queen', 'assets/images/Cover2.jpeg','assets/audio/Don\'t Stop Me Now.mp3'),
-    Music('Somebody To Love', 'Queen', 'assets/images/Cover3.jpeg','assets/audio/Good Old Fashioned Lover Boy'),
-    Music('Love Of My Life', 'Queen', 'assets/images/Cover4.jpeg','assets/audio/I Want to Break Free'),
-    Music('Killer Queen', 'Queen', 'assets/images/Cover5.jpeg','assets/audio/Killer Queen'),
-    Music('Good Old-Fashioned Lover Boy', 'Queen', 'assets/images/Cover6.jpeg','assets/audio/Love of My Life'),
-    Music('Radio Ga-Ga', 'Queen', 'assets/images/Cover7.jpeg','assets/audio/Radio Ga Ga'),
-    Music('Under Pressure', 'Queen', 'assets/images/Cover8.jpeg','assets/audio/Somebody To Love'),
-    Music('We Will Rock You', 'Queen', 'assets/images/Cover9.jpeg','assets/audio/Under Pressure'),
-    Music("Don't Stop Me Now", 'Queen', 'assets/images/Cover10.jpeg','assets/audio/We Will Rock You'),
+    Music(
+      'Bohemian Rhapsody',
+      'Queen',
+      'assets/images/Cover1.jpeg',
+      'assets/audio/Bohemian Rhapsody.mp3',
+      Duration(minutes: 5, seconds: 59),
+    ),
+    Music(
+      'I Want To Break Free',
+      'Queen',
+      'assets/images/Cover2.jpeg',
+      'assets/audio/I Want to Break Free.mp3',
+      Duration(minutes: 4, seconds: 23),
+    ),
+    Music(
+      'Somebody To Love',
+      'Queen',
+      'assets/images/Cover3.jpeg',
+      'assets/audio/Somebody To Love.mp3',
+      Duration(minutes: 5, seconds: 9),
+    ),
+    Music(
+      'Love Of My Life',
+      'Queen',
+      'assets/images/Cover4.jpeg',
+      'assets/audio/Love of My Life.mp3',
+      Duration(minutes: 3, seconds: 41),
+    ),
+    Music(
+      'Killer Queen',
+      'Queen',
+      'assets/images/Cover5.jpeg',
+      'assets/audio/Killer Queen.mp3',
+      Duration(minutes: 3, seconds: 12),
+    ),
+    Music(
+      'Good Old-Fashioned Lover Boy',
+      'Queen',
+      'assets/images/Cover6.jpeg',
+      'assets/audio/Good Old Fashioned Lover Boy.mp3',
+      Duration(minutes: 3, seconds: 6),
+    ),
+    Music(
+      'Radio Ga-Ga',
+      'Queen',
+      'assets/images/Cover7.jpeg',
+      'assets/audio/Radio Ga Ga.mp3',
+      Duration(minutes: 5, seconds: 53),
+    ),
+    Music(
+      'Under Pressure',
+      'Queen',
+      'assets/images/Cover8.jpeg',
+      'assets/audio/Under Pressure.mp3',
+      Duration(minutes: 4, seconds: 13),
+    ),
+    Music(
+      'We Will Rock You',
+      'Queen',
+      'assets/images/Cover9.jpeg',
+      'assets/audio/We Will Rock You.mp3',
+      Duration(minutes: 2, seconds: 14),
+    ),
+    Music(
+      "Don't Stop Me Now",
+      'Queen',
+      'assets/images/Cover10.jpeg',
+      'assets/audio/Don\'t Stop Me Now.mp3',
+      Duration(minutes: 3, seconds: 30),
+    ),
   ];
 
   @override
@@ -245,12 +394,12 @@ class MusicListPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text('Music Player'),
+        title: Text('OH Music Player'),
       ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/images/Background.jpeg'),
+            image: AssetImage('assets/images/Background1.jpeg'),
             fit: BoxFit.cover,
           ),
         ),
@@ -284,7 +433,6 @@ class MusicListPage extends StatelessWidget {
                 ),
                 trailing: Icon(
                   Icons.play_circle_filled,
-                  size: 30,
                   color: Colors.white,
                 ),
                 onTap: () {
@@ -293,6 +441,8 @@ class MusicListPage extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => MusicPlayerPage(
                         music: musicList[index],
+                        musicList: musicList,
+                        currentIndex: index,
                       ),
                     ),
                   );
@@ -308,6 +458,8 @@ class MusicListPage extends StatelessWidget {
 
 void main() {
   runApp(MaterialApp(
+    title: 'OH Music Player',
+    theme: ThemeData.dark(),
     home: MusicListPage(),
   ));
 }

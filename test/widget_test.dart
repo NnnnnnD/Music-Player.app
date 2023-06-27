@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:music_player_app/main.dart';
+import 'package:music_player_app/music_app.dart';
 
 void main() {
   testWidgets('Music Player App Test', (WidgetTester tester) async {
